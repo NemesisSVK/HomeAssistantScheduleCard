@@ -6,8 +6,8 @@ A custom Lovelace card that visualizes Home Assistant **schedule helper** entiti
 
 ## Features
 
-- **Multi-schedule support** — Display up to 3 schedules in one card
-- **Grouping** — Group schedules together (overlap) or separate them into different rows
+- **Multi-schedule support** — Display up to 25 schedules (5 groups × 5 per group)
+- **Grouping** — Same group = overlapping rows, different group = separate row per day (Mon G1 / Mon G2 / Tue G1 / Tue G2...)
 - **Weekly grid view** — All 7 days at a glance with hour gridlines
 - **Colored time blocks** — Custom colors for each schedule
 - **Current time indicator** — Red line on today's row
@@ -85,11 +85,12 @@ entities:
 | `entity` | string | **Required** | The `schedule.*` entity ID |
 | `name` | string | Friendly name | Display name for the legend |
 | `color` | string | Auto | CSS color (hex, rgb, etc.) for blocks/dot |
-| `group` | number | `1` | Group number. Entities in the same group share rows (overlap). |
-| `opacity` | number | Auto | (0.0 - 1.0) Block transparency. Default: 0.6 (overlap), 0.75 (single). |
+| `group` | number | `1` | Entities in the same group overlap. Different groups get separate rows per day. Max 5 distinct groups. |
+| `opacity` | number | Auto | (0.0 – 1.0) Block transparency. Default: `0.6` (overlap), `0.75` (single). |
 | `show_text`| boolean | Global | Override the global `show_text` setting for this entity. |
 
 ## Troubleshooting
 
-- **"Entity not found"** — Verify the entity exists in Developer Tools
-- **Changes not showing** — You might need to clear browser cache after updating the card version
+- **"Entity not found"** — Verify the entity exists in Developer Tools → States
+- **Schedule shows empty rows** — The entity's internal ID may differ (e.g. after renaming). The card resolves this automatically via the entity registry; if it still fails, check the browser console for the available IDs and ensure the entity is a `schedule.*` helper
+- **Changes not showing** — Clear browser cache after updating the card file; also ensure the resource URL version is being loaded fresh

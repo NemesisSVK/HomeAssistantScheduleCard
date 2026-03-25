@@ -5,14 +5,19 @@
  * as a weekly time grid with colored blocks.
  * Supports up to 3 schedules with grouping and per-entity colors.
  *
- * @version 2.2.1
+ * @version 2.3.0
+ * Supports up to 25 schedules (5 groups × 5 per group).
  */
 
 const DAYS_ORDERED = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const HOURS_IN_DAY = 24;
-const MAX_ENTITIES = 3;
-const DEFAULT_COLORS = ['#03a9f4', '#ff9800', '#4caf50'];
+const MAX_ENTITIES = 25;  // Up to 5 groups × 5 per group
+const DEFAULT_COLORS = ['#03a9f4', '#ff9800', '#4caf50', '#e91e63', '#9c27b0',
+                        '#00bcd4', '#ff5722', '#8bc34a', '#ffc107', '#607d8b',
+                        '#3f51b5', '#f44336', '#009688', '#ff9800', '#795548',
+                        '#673ab7', '#cddc39', '#2196f3', '#e040fb', '#00e676',
+                        '#ff1744', '#40c4ff', '#69f0ae', '#ffea00', '#ff6d00'];
 
 // Map JS Date.getDay() (0=Sun) to our index (0=Mon)
 const JS_DAY_TO_INDEX = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 0: 6 };
@@ -53,8 +58,10 @@ class ScheduleCard extends HTMLElement {
         });
 
         this._config = config;
-        this._scheduleDataMap = {};  // entityId -> schedule data
+        this._scheduleDataMap = {};
         this._dataFetched = false;
+        // Track which entity IDs we have already fetched, to detect config changes
+        this._fetchedEntityIds = null;
     }
 
     getCardSize() {
@@ -90,9 +97,11 @@ class ScheduleCard extends HTMLElement {
             }
         }
 
-        // Fetch schedule data once
-        if (!this._dataFetched) {
-            this._dataFetched = true;
+        // Fetch schedule data when entities change or first load
+        const currentIds = this._entities.map(e => e.entity).sort().join(',');
+        if (this._fetchedEntityIds !== currentIds) {
+            this._fetchedEntityIds = currentIds;
+            this._scheduleDataMap = {};
             this._fetchAllScheduleData();
         }
 
@@ -104,11 +113,35 @@ class ScheduleCard extends HTMLElement {
     async _fetchAllScheduleData() {
         try {
             const result = await this._hass.callWS({ type: 'schedule/list' });
+
             for (const ent of this._entities) {
                 const scheduleId = ent.entity.replace('schedule.', '');
-                const item = result.find(s => s.id === scheduleId);
+
+                // Fast path: match by derived ID (works when entity was never renamed)
+                let item = result.find(s => s.id === scheduleId);
+
+                if (!item) {
+                    // Slow path: entity was renamed. The internal schedule ID is stored
+                    // as the entity's unique_id in the entity registry — fetch it.
+                    try {
+                        const regEntry = await this._hass.callWS({
+                            type: 'config/entity_registry/get',
+                            entity_id: ent.entity,
+                        });
+                        if (regEntry && regEntry.unique_id) {
+                            item = result.find(s => s.id === regEntry.unique_id);
+                        }
+                    } catch (regErr) {
+                        console.warn(`Schedule Card: Could not query entity registry for ${ent.entity}`, regErr);
+                    }
+                }
+
                 if (item) {
                     this._scheduleDataMap[ent.entity] = item;
+                } else {
+                    console.warn(`Schedule Card: No data found for ${ent.entity}. ` +
+                        `Available IDs: ${result.map(s => s.id).join(', ')}`);
+                    this._scheduleDataMap[ent.entity] = {};
                 }
             }
             this._render();
@@ -117,6 +150,8 @@ class ScheduleCard extends HTMLElement {
             this._renderError('Failed to load schedule data');
         }
     }
+
+
 
     // ── Helpers ─────────────────────────────────────────────
 
@@ -179,9 +214,9 @@ class ScheduleCard extends HTMLElement {
     }
 
     _render() {
-        // Wait until all data is ready
-        const allReady = this._entities.every(e => this._scheduleDataMap[e.entity]);
-        if (!allReady) return;
+        // Render even if some entities have no schedule data yet (show empty rows)
+        const anyReady = Object.keys(this._scheduleDataMap).length > 0;
+        if (!anyReady) return; // Still loading first entity
 
         if (!this.shadowRoot) this.attachShadow({ mode: 'open' });
 
@@ -648,12 +683,12 @@ window.customCards = window.customCards || [];
 window.customCards.push({
     type: 'schedule-card',
     name: 'Schedule Card',
-    description: 'Displays schedule helpers as a weekly time grid (up to 3)',
+    description: 'Displays schedule helpers as a weekly time grid (up to 5 groups × 5 per group)',
     preview: true,
 });
 
 console.info(
-    '%c SCHEDULE-CARD %c v2.2.1 ',
+    '%c SCHEDULE-CARD %c v2.3.0 ',
     'color: white; background: #03a9f4; font-weight: 700; padding: 2px 6px; border-radius: 4px 0 0 4px;',
     'color: #03a9f4; background: #e3f2fd; font-weight: 700; padding: 2px 6px; border-radius: 0 4px 4px 0;'
 );
