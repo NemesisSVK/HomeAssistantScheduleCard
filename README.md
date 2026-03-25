@@ -2,20 +2,35 @@
 
 A custom Lovelace card that visualizes Home Assistant **schedule helper** entities as a weekly time grid.
 
-![Schedule Card](https://img.shields.io/badge/HA-Custom%20Card-03a9f4?style=flat-square)
+[![HACS](https://img.shields.io/badge/HACS-Custom-orange?style=flat-square)](https://github.com/hacs/integration)
+![Version](https://img.shields.io/badge/version-2.3.0-blue?style=flat-square)
+![HA](https://img.shields.io/badge/HA-2023.9%2B-03a9f4?style=flat-square)
 
 ## Features
 
 - **Multi-schedule support** — Display up to 25 schedules (5 groups × 5 per group)
 - **Grouping** — Same group = overlapping rows, different group = separate row per day (Mon G1 / Mon G2 / Tue G1 / Tue G2...)
 - **Weekly grid view** — All 7 days at a glance with hour gridlines
-- **Colored time blocks** — Custom colors for each schedule
+- **Colored time blocks** — Custom colors per entity, with 25 auto-assigned defaults
+- **Transparency control** — Per-entity `opacity` (0.0 – 1.0)
 - **Current time indicator** — Red line on today's row
-- **Interactive** — Click entity names/dots (in multi-mode) or the card (in single-mode) to open the native more-info dialog
+- **Interactive legend** — Click entity names to open the native more-info dialog
+- **Renamed entity support** — Resolves schedule data even after entity rename
+- **Auto card sizing** — No manual height tuning needed (overridable via `card_size`)
 - **Theme aware** — Uses HA CSS variables
 - **Zero dependencies** — Single JS file
 
 ## Installation
+
+### HACS (Recommended)
+
+1. Open **HACS** in your Home Assistant sidebar
+2. Click **⋮ → Custom repositories**
+3. Add `https://github.com/NemesisSVK/HomeAssistantScheduleCard` as category **Dashboard**
+4. Search for **Schedule Card** in HACS and install it
+5. Add the card to your dashboard via the YAML editor
+
+> Once the repository is submitted to the HACS default store, you'll be able to search for it directly without adding a custom repository.
 
 ### Manual
 
