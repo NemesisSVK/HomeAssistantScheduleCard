@@ -5,7 +5,7 @@
  * as a weekly time grid with colored blocks.
  * Supports up to 3 schedules with grouping and per-entity colors.
  *
- * @version 2.3.0
+ * @version 2.3.1
  * Supports up to 25 schedules (5 groups × 5 per group).
  */
 
@@ -400,6 +400,8 @@ class ScheduleCard extends HTMLElement {
       ha-card {
         overflow: hidden;
         cursor: pointer;
+        position: relative;
+        z-index: 0; /* Create isolated stacking context so high z-index children don't bleed over HA menu */
       }
 
       .card-header {
@@ -688,7 +690,7 @@ window.customCards.push({
 });
 
 console.info(
-    '%c SCHEDULE-CARD %c v2.3.0 ',
+    '%c SCHEDULE-CARD %c v2.3.1 ',
     'color: white; background: #03a9f4; font-weight: 700; padding: 2px 6px; border-radius: 4px 0 0 4px;',
     'color: #03a9f4; background: #e3f2fd; font-weight: 700; padding: 2px 6px; border-radius: 0 4px 4px 0;'
 );
