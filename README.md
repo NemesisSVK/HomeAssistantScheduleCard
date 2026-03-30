@@ -3,7 +3,7 @@
 A custom Lovelace card that visualizes Home Assistant **schedule helper** entities as a weekly time grid.
 
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange?style=flat-square)](https://github.com/hacs/integration)
-![Version](https://img.shields.io/badge/version-2.3.0-blue?style=flat-square)
+![Version](https://img.shields.io/badge/version-2.3.6-blue?style=flat-square)
 ![HA](https://img.shields.io/badge/HA-2023.9%2B-03a9f4?style=flat-square)
 
 ## Features
@@ -16,7 +16,7 @@ A custom Lovelace card that visualizes Home Assistant **schedule helper** entiti
 - **Current time indicator** — Red line on today's row
 - **Interactive legend** — Click entity names to open the native more-info dialog
 - **Renamed entity support** — Resolves schedule data even after entity rename
-- **Auto card sizing** — No manual height tuning needed (overridable via `card_size`)
+- **Native Auto-sizing** — Adapts flawlessly to both Lovelace Masonry and Section layouts out-of-the-box (no manual `card_size` tuning needed)
 - **Theme aware** — Uses HA CSS variables
 - **Zero dependencies** — Single JS file
 
