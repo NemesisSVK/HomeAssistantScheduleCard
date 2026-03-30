@@ -5,7 +5,7 @@
  * as a weekly time grid with colored blocks.
  * Supports up to 3 schedules with grouping and per-entity colors.
  *
- * @version 2.3.1
+ * @version 2.3.6
  * Supports up to 25 schedules (5 groups × 5 per group).
  */
 
@@ -68,20 +68,31 @@ class ScheduleCard extends HTMLElement {
         if (this._config && this._config.card_size != null) {
             return this._config.card_size;
         }
-        // Calibrated: N=1→5.25, N=2→8.4, N=3→11.6
-        // Formula: 2.075 + (3.175 * N)
         const numGroups = [...new Set(this._entities.map(e => e.group))].length;
-        return 2.075 + (3.175 * numGroups);
+        let rows = 2.075 + (3.175 * numGroups);
+        
+        // Minor overhead for legend in legacy Masonry dashboards
+        if (this._entities.length > 1) {
+            rows += 0.5; 
+        }
+        return rows;
     }
 
     getGridOptions() {
         if (this._config && this._config.card_size != null) {
             const rows = this._config.card_size;
-            return { rows, columns: 12, min_rows: rows, max_rows: rows };
+            return { columns: 12, min_rows: rows, max_rows: rows };
         }
         const numGroups = [...new Set(this._entities.map(e => e.group))].length;
-        const rows = 2.075 + (3.175 * numGroups);
-        return { rows, columns: 12, min_rows: rows - 1, max_rows: rows + 2 };
+        let baseRows = 2.075 + (3.175 * numGroups);
+
+        // For Home Assistant Sections layout:
+        // Omit 'rows' and 'max_rows' entirely, so it naturally sizes itself based on its internal DOM
+        // We only provide a min_rows so it isn't completely compressed initially
+        return { 
+            columns: 12, 
+            min_rows: Math.max(1, Math.floor(baseRows - 1)) 
+        };
     }
 
     // ── hass setter ─────────────────────────────────────────
@@ -493,6 +504,8 @@ class ScheduleCard extends HTMLElement {
 
       .card-content {
         padding: 4px 16px 14px 16px;
+        display: flex;
+        flex-direction: column;
       }
 
       /* ── Hour header ──────────────────────── */
@@ -502,6 +515,7 @@ class ScheduleCard extends HTMLElement {
         align-items: flex-end;
         height: 18px;
         margin-bottom: 2px;
+        flex-shrink: 0;
       }
 
       .day-label-spacer {
@@ -546,6 +560,7 @@ class ScheduleCard extends HTMLElement {
         gap: 1px; /* Gap between Groups within a day */
         border-radius: 4px;
         overflow: hidden; /* For container background/radius */
+        flex-shrink: 0;
       }
 
       .day-container.today-container {
@@ -556,8 +571,7 @@ class ScheduleCard extends HTMLElement {
         display: flex;
         align-items: center;
         height: var(--schedule-row-height);
-        /* No individual BG or Radius needed for rows inside container, 
-           unless we want zebra striping for groups, but clean is better */
+        flex-shrink: 0;
       }
 
       .day-label-cell {
@@ -690,7 +704,7 @@ window.customCards.push({
 });
 
 console.info(
-    '%c SCHEDULE-CARD %c v2.3.1 ',
+    '%c SCHEDULE-CARD %c v2.3.6 ',
     'color: white; background: #03a9f4; font-weight: 700; padding: 2px 6px; border-radius: 4px 0 0 4px;',
     'color: #03a9f4; background: #e3f2fd; font-weight: 700; padding: 2px 6px; border-radius: 0 4px 4px 0;'
 );
